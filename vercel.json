@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+          {
+                  "source": "/(.*)",
+                  "destination": "https://gi4i1z5e61x8msy1v46w.share.dreamflow.app/$1"
+          }
+    ]
+}
