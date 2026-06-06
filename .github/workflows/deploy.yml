@@ -1,0 +1,33 @@
+name: Build and Deploy Flutter Web
+on:
+  push:
+    branches: [main]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+      - name: Get dependencies
+        run: flutter pub get
+      - name: Build web
+        run: flutter build web --release --base-href "/"
+      - name: Ensure OCR in build
+        run: |
+          if ! grep -q "tesseract" build/web/index.html; then
+            cp web/index.html build/web/index.html
+            sed -i 's|$FLUTTER_BASE_HREF|/|g' build/web/index.html
+          fi
+          [ -f web/ocr.js ] && cp web/ocr.js build/web/ocr.js
+      - name: Install Vercel CLI
+        run: npm i -g vercel
+      - name: Deploy to Vercel
+        run: cd build/web && vercel deploy --prod --token=$VERCEL_TOKEN --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_W1AzTrN46rhOvTVKItiyUJrt
+          VERCEL_PROJECT_ID: prj_AoJUfFeFVFXZ8gECSyZIA3BNAEpt
